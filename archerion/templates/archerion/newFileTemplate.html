@@ -1,0 +1,244 @@
+
+
+{% extends 'archerion/template.html' %}
+{% load staticfiles %}
+
+{% block content %}
+    <div class="container">
+        <!--Dialogs zone-->
+        <div class="dialog" id="notEnoughFields" data-role="dialog">
+            <div class="dialog-title">No existen campos para eliminar</div>
+            <div class="dialog-content">
+                Debe existir al menos un campo del documento
+            </div>
+            <div class="dialog-actions">
+                <button class="button primary js-dialog-close">Aceptar</button>
+            </div>
+        </div>
+
+        <div class="dialog" id="imageNotLoaded" data-role="dialog">
+            <div class="dialog-title">No se ha cargado una imagen</div>
+            <div class="dialog-content">
+                Debe de cargar un documento antes de crear nuevos campos
+            </div>
+            <div class="dialog-actions">
+                <button class="button primary js-dialog-close">Aceptar</button>
+            </div>
+        </div>
+        <!--End dialogs zone-->
+
+
+        <div class="row">
+            <div class="cell">
+                <h2 align="center">Crear nueva plantilla de archivo</h2>
+            </div>
+        </div>
+
+        <form action="saveDocumentTemplate" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="cell">
+                    <input id="upload" name="file" type="file" data-role="file"
+                           data-button-title="Abrir archivo">
+                </div>
+                <div class="cell">
+                    <label for="">Usar reconocimiento de caracteres</label>
+                    <input name="ocrEnable" id="ocrSwitch" checked onchange="toggleOcr()" type="checkbox" data-role="switch"
+                           data-material="true">
+                </div>
+
+            </div>
+            <br><br>
+            <div class="row">
+                <div class="cell">
+                    <input type="text" data-role="input" name="name" data-prepend="Nombre del documento"
+                           data-autocomplete="{{ names }}" autocomplete="off" required
+                           onkeydown="return event.key != 'Enter';">
+
+                </div>
+                <div class="cell">
+                    <input type="text" data-role="input" name="classification" data-prepend="Tipo de documento"
+                           data-autocomplete="Administrativo, Contable, Juridico" autocomplete="off" required
+                           onkeydown="return event.key != 'Enter';">
+                </div>
+            </div>
+            <div class="row">
+                <div class="cell">
+                    <input type="text" autocomplete="off" name="x1" readonly id="x1" data-role="input" data-prepend="X">
+                </div>
+                <div class="cell">
+                    <input type="text" autocomplete="off" name="y1" readonly id="y1" data-role="input" data-prepend="Y">
+                </div>
+                <div class="cell">
+                    <input type="text" autocomplete="off" name="w1" class="hidden" readonly id="w1" data-role="input"
+                           data-prepend="W">
+
+
+                    <input type="text" name="h1" autocomplete="off" class="hidden" readonly id="h1" data-role="input"
+                           data-prepend="H">
+
+                    <input type="text" name="f1" id="f1" data-role="input" data-prepend="Campo"
+                           data-autocomplete="{{ fieldNames }}" autocomplete="off" required
+                           onkeydown="return event.key != 'Enter';">
+                </div>
+            </div>
+
+            <div id="additionalFields">
+
+            </div>
+
+            <div class="row" align="center">
+                <div class="cell">
+                    <button type="button" onclick="addExtractArea();" class="button info">Anadir campo</button>
+                </div>
+                <div class="cell">
+                    <button type="button" onclick="removeLastArea();" class="button alert ">Remover campo</button>
+                </div>
+
+                <div class="cell">
+                    <button class="button success">Guardar</button>
+                </div>
+
+                <div class="cell">
+                    <input type="text" autocomplete="off" data-role="input" readonly id="fieldCounter"
+                           name="fieldCounter" required>
+                </div>
+            </div>
+        </form>
+
+
+        <div class="row">
+            <div class="cell" id="imageContainer">
+                <img id="img" src="{% static 'img/212-2129171_water-drop-icon-water-drop-flat-design.png.jpg' %}"
+                     alt="">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('#upload').change(function () {
+                var input = this;
+                var url = $(this).val();
+                var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+                if (input.files && input.files[0] && (ext == "gif" || ext == "png" || ext == "jpeg" || ext == "jpg")) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        $('#img').attr('src', e.target.result);
+                        let image = document.getElementById('img');
+                        cropper.destroy();
+                        cropper = new Cropper(image, {
+                            autoCrop: false,
+                            zoomOnWheel: false,
+                            crop(event) {
+                                x.value = event.detail.x;
+                                y.value = event.detail.y;
+                                w.value = event.detail.width;
+                                h.value = event.detail.height;
+                                imageLoaded = true;
+                            },
+                        });
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    $('#img').attr('src', '/assets/no_preview.png');
+                }
+            });
+
+        });
+    </script>
+
+    <script>
+        fieldCounter = 1;
+        imageLoaded = false;
+        useOcr = document.getElementById('ocrSwitch').checked;
+
+        function toggleOcr() {
+            useOcr = document.getElementById("ocrSwitch").checked;
+            let fileField = document.getElementById('upload');
+            fileField.disabled = !useOcr;
+        }
+
+        function removeLastArea() {
+            if (fieldCounter >= 2) {
+                let area = document.getElementById('additionalFields');
+                area.removeChild(area.lastElementChild);
+                fieldCounter -= 1;
+                document.getElementById('fieldCounter').value = fieldCounter;
+            } else {
+                Metro.dialog.open("#notEnoughFields");
+            }
+
+
+        }
+
+        function addExtractArea() {
+            if (imageLoaded || !useOcr) {
+                fieldCounter += 1;
+            }
+            document.getElementById('fieldCounter').value = fieldCounter;
+            var newDiv = document.createElement('div');
+            template = "<div class=\"row\">\n" +
+                "                <div class=\"cell\">\n" +
+                "                    <input type=\"text\" name=\"x#\" readonly id=\"x#\" data-role=\"input\" data-prepend=\"X\">\n" +
+                "                </div>\n" +
+                "                <div class=\"cell\">\n" +
+                "                    <input type=\"text\" name=\"y#\" readonly id=\"y#\" data-role=\"input\" data-prepend=\"Y\">\n" +
+                "                </div>\n" +
+                "                <div class=\"cell\">\n" +
+                "                    <input type=\"text\" name=\"w#\" class=\"hidden\" readonly id=\"w#\" data-role=\"input\" data-prepend=\"W\">\n" +
+                "\n" +
+                "\n" +
+                "                    <input type=\"text\" name=\"h#\" class=\"hidden\" readonly id=\"h#\" data-role=\"input\" data-prepend=\"H\">\n" +
+                "\n" +
+                "                    <input type=\"text\" name=\"f#\" id=\"f#\" data-role=\"input\" data-prepend=\"Campo\" " +
+                " data-autocomplete=\"{{ fieldNames }} \"  autocomplete=\"off\">\n" +
+                "                </div>\n" +
+                "            </div>"
+            template = template.replace(/#/gi, fieldCounter.toString());
+            newDiv.innerHTML = template;
+            let area = document.getElementById("additionalFields");
+            if (imageLoaded || !useOcr) {
+                area.appendChild(newDiv);
+                updateFields();
+            } else {
+                Metro.dialog.open('#imageNotLoaded');
+            }
+
+        }
+
+        function updateFields() {
+            x = document.getElementById('x' + fieldCounter.toString());
+            y = document.getElementById('y' + fieldCounter.toString());
+            w = document.getElementById('w' + fieldCounter.toString());
+            h = document.getElementById('h' + fieldCounter.toString());
+        }
+    </script>
+
+    <script>
+        window.onload = function () {
+            document.getElementById('upload').disabled = !useOcr;
+            document.getElementById('fieldCounter').value = fieldCounter;
+            let image = document.getElementById('img');
+            x = document.getElementById('x' + fieldCounter.toString());
+            y = document.getElementById('y' + fieldCounter.toString());
+            w = document.getElementById('w' + fieldCounter.toString());
+            h = document.getElementById('h' + fieldCounter.toString());
+            cropper = new Cropper(image, {
+                autoCrop: false,
+                zoomOnWheel: false,
+                crop(event) {
+                    x.value = event.detail.x;
+                    y.value = event.detail.y;
+                    w.value = event.detail.width;
+                    h.value = event.detail.height;
+
+                },
+            });
+        }
+    </script>
+
+
+
+{% endblock %}

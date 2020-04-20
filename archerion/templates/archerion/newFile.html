@@ -1,0 +1,89 @@
+{% extends 'archerion/template.html' %}
+
+{% block content %}
+    <div class="container">
+
+        <!--Drag and drop section-->
+
+        <form action="uploadDocument" id="documentForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="cell">
+                    <input type="text" readonly name="documentId" value="{{ documentId }}">
+                </div>
+                <div class="cell">
+                    <input type="file" data-role="file" id="filePDF" name="filePDF">
+                    <!--
+                    <input type="file" name="filePDF" id="file" class="inputfile"/>
+                    <div class="customInput" style="margin-left: 35%">
+                        <label for="file" style="display: block;text-align: center;">
+                            <i class="fas fa-file-pdf fa-4x"></i> <br>
+                            Subir PDF
+                        </label>
+                    </div>
+                    -->
+                </div>
+                <div class="cell">
+                    <input type="file" data-role="file" id="fileJPG" name="fileJPG">
+                    <!--
+                    <input type="file" name="fileJPG" id="file" class="inputfile"/>
+                    <div class="customInput" style="margin-left: 30%">
+                        <label for="file" style="display: block;text-align: center;">
+                            <i class="fas fa-file-image fa-4x"></i> <br>
+                            Subir JPG
+                        </label>
+                    </div>
+                    -->
+                </div>
+            </div>
+
+            <!--End drag & drop section-->
+
+            <div class="row">
+                <div class="cell"></div>
+                <div class="cell" style="text-align: center;">
+                    <button type="submit" class="button info">Enviar documento</button>
+                </div>
+                <div class="cell"></div>
+            </div>
+
+            {% for f in fields %}
+                <div class="row">
+                    <div class="cell">
+                        <input autocomplete="off" id="{{ f }}" data-role="input" data-prepend="{{ f }}" type="text" name="{{ f }}">
+                    </div>
+                </div>
+            {% endfor %}
+
+        </form>
+    </div>
+
+    <script>
+        function updateFields(fieldsDict) {
+            for (var key in fieldsDict) {
+                field = document.getElementById(key);
+                field.value = fieldsDict[key];
+            }
+        }
+    </script>
+
+    <script>
+        $("form#documentForm").submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: '/uploadDocument',
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    updateFields(data['fieldsDict']);
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+    </script>
+
+
+{% endblock %}

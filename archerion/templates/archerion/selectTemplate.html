@@ -1,0 +1,68 @@
+{% extends 'archerion/template.html' %}
+
+{% block content %}
+    <br><br>
+
+    <div class="container">
+        <form action="saveContainer" id="documentForm" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="cell">
+                    <h3>Datos del contenedor</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="cell">
+                    <input name="containerName" type="text" data-role="input" data-prepend="Nombre">
+                </div>
+                <div class="cell">
+                    <select name="containerType" data-role="select" id="" data-prepend="Soporte">
+                        <option value="Folder">Folder</option>
+                        <option value="Box">Caja</option>
+                        <option value="Book">Libro engargolado</option>
+                    </select>
+
+
+
+
+
+
+                </div>
+                <div class="cell">
+                    <input type="text" data-role="input" data-prepend="Numero: ">
+                </div>
+                <div class="cell">
+                    <input type="text" data-role="input" data-prepend="De: ">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="cell"><input type="text" data-role="input" data-prepend="Estante"></div>
+                <div class="cell"><input type="text" data-role="input" data-prepend="Pasillo"></div>
+                <div class="cell"><input type="text" data-role="input" data-prepend="IDK"></div>
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        <div class="cell">
+            <h2 align="center">
+                Seleccione el documento a registrar
+            </h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="cell"></div>
+        <div class="cell">
+            <form action="searchForTemplate" method="post">
+                {% csrf_token %}
+                <select name="documentName" id="" data-role="select">
+                    {% for x in names %}
+                        <option value="{{ x }}">{{ x }}</option>
+                    {% endfor %}
+                </select> <br>
+                <button class="button primary">Seleccionar</button>
+            </form>
+        </div>
+        <div class="cell"></div>
+    </div>
+{% endblock %}

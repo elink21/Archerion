@@ -1,0 +1,271 @@
+
+body {
+    color: #3e3e3e;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    font-family: 'sen', sans-serif;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.padded-cell {
+    padding: 3%;
+}
+
+.header {
+    height: 10vh;
+    background-color: #57B5DB;
+    color: white;
+}
+
+#img {
+    display: block;
+    max-width: 100%;
+    min-height: 600px;
+}
+
+#menu {
+    position: absolute;
+    color: white;
+    top: 15px;
+    right: 10px;
+}
+
+.shadow {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08),
+    0 2px 2px rgba(0, 0, 0, 0.08),
+    0 4px 4px rgba(0, 0, 0, 0.08),
+    0 8px 8px rgba(0, 0, 0, 0.08),
+    0 16px 16px rgba(0, 0, 0, 0.08);
+}
+
+body::-webkit-scrollbar {
+    width: 0.5rem;
+    z-index: 2;
+}
+
+body::-webkit-scrollbar-track {
+    background: white;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: #0d5070;
+}
+
+
+.hidden {
+    display: none;
+}
+
+/*Menu styles*/
+/* The Overlay (background) */
+.overlayNav {
+    /* Height & width depends on how you want to reveal the overlay (see JS below) */
+    height: 100%;
+    width: 0;
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+
+    background-color: rgba(121, 194, 244, 0.9); /* Black w/opacity */
+    overflow-x: hidden; /* Disable horizontal scroll */
+    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+}
+
+/* Position the content inside the overlay */
+.overlay-contentNav {
+    position: relative;
+    top: 25%; /* 25% from the top */
+    width: 100%; /* 100% width */
+    text-align: center; /* Centered text/links */
+    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+}
+
+/* The navigation links inside the.overlayNav*/
+.overlayNav a:not([data-attr="closeBtn"]) {
+    padding: 8px;
+    text-decoration: none;
+    font-size: 24px;
+    color: white;
+    display: block; /* Display block instead of inline */
+    transition: 0.3s; /* Transition effects on hover (color) */
+}
+
+/* When you mouse over the navigation links, change their color */
+.overlayNav .option:hover, .overlayNav .option:focus {
+    background-color: white;
+    color: #2ac4f4;
+}
+
+/* Position the close button (top right corner) */
+.overlayNav .closebtn {
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    color: white;
+}
+
+/* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
+@media screen and (max-height: 450px) {
+    .overlayNav a {
+        font-size: 20px
+    }
+
+    .overlayNav .closebtn {
+        font-size: 40px;
+        top: 15px;
+        right: 35px;
+    }
+}
+
+/*End menu styles*/
+
+
+/*Loader styles*/
+.loaderText {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    width: 100px;
+    height: 100px;
+    color: white;
+}
+
+
+.loaderWrapper {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 100000;
+    left: 0;
+    justify-content: center;
+    background-color: #3498DB;
+
+}
+
+.lds-grid {
+    display: inline-block;
+    position: absolute;
+    width: 100px;
+    top: 38%;
+    left: 48%;
+    height: 100px;
+}
+
+.lds-grid div {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    animation: lds-grid 1.2s linear infinite;
+}
+
+.lds-grid div:nth-child(1) {
+    top: 8px;
+    left: 8px;
+    animation-delay: 0s;
+}
+
+.lds-grid div:nth-child(2) {
+    top: 8px;
+    left: 32px;
+    animation-delay: -0.4s;
+}
+
+.lds-grid div:nth-child(3) {
+    top: 8px;
+    left: 56px;
+    animation-delay: -0.8s;
+}
+
+.lds-grid div:nth-child(4) {
+    top: 32px;
+    left: 8px;
+    animation-delay: -0.4s;
+}
+
+.lds-grid div:nth-child(5) {
+    top: 32px;
+    left: 32px;
+    animation-delay: -0.8s;
+}
+
+.lds-grid div:nth-child(6) {
+    top: 32px;
+    left: 56px;
+    animation-delay: -1.2s;
+}
+
+.lds-grid div:nth-child(7) {
+    top: 56px;
+    left: 8px;
+    animation-delay: -0.8s;
+}
+
+.lds-grid div:nth-child(8) {
+    top: 56px;
+    left: 32px;
+    animation-delay: -1.2s;
+}
+
+.lds-grid div:nth-child(9) {
+    top: 56px;
+    left: 56px;
+    animation-delay: -1.6s;
+}
+
+@keyframes lds-grid {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+
+/*End loaders styles*/
+
+
+/*Drag & drop styles*/
+.inputfile {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile + label , .customInput{
+    font-size: 1em;
+    font-weight: 700;
+    color: white;
+    padding: 10px;
+    background-color: rgba(121,194,244,1);
+    display: inline-block;
+    transition: .3s ease;
+    border-radius: 0.3em;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover , .customInput:hover{
+    background-color: rgba(121, 194, 244, 0.7);
+    color: white;
+}
+
+.customInput:hover, .customInput label:hover{
+    cursor: pointer; /* "hand" cursor */
+}
+
+
+/*End drag & drop styles*/
