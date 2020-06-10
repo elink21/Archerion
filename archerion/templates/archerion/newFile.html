@@ -1,61 +1,120 @@
 {% extends 'archerion/template.html' %}
-
+{% load staticfiles %}
 {% block content %}
+
+
     <div class="container">
+
+        <!--Dialogs zone-->
+        <div class="dialog" id="ocrSuccessful" data-role="dialog">
+            <div class="dialog-title">Analisis exitoso</div>
+            <div class="dialog-content">
+                Los datos han sido leidos, por favor corrobore la correspondencia
+                con el documento.
+            </div>
+            <div class="dialog-actions">
+                <button class="button primary js-dialog-close">Aceptar</button>
+            </div>
+        </div>
+
+        <div class="dialog" id="imageNotLoaded" data-role="dialog">
+            <div class="dialog-title">No se ha cargado una imagen</div>
+            <div class="dialog-content">
+                Debe de cargar una imagen JPG para lectura, esta sera convertida a PDF posteriormente.
+                Si no se esta usando OCR, puede usar un PDF en su lugar.
+            </div>
+            <div class="dialog-actions">
+                <button class="button primary js-dialog-close">Aceptar</button>
+            </div>
+        </div>
+        <!--End dialogs zone-->
+
+        <div class="row">
+            <div class="cell">
+                <h2 align="center">Archivar documento</h2>
+            </div>
+        </div>
+        <br><br>
+
 
         <!--Drag and drop section-->
 
-        <form action="uploadDocument" id="documentForm" method="post" enctype="multipart/form-data">
+        <form action="uploadDocument" id="createDocumentForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row">
                 <div class="cell">
-                    <input type="text" readonly name="documentId" value="{{ documentId }}">
+                    <H5>Documentos digitalizados</H5>
+                </div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+            </div>
+            <div class="row">
+                <div class="cell">
+                    <input type="text" data-role="input" data-prepend="Tipo: " readonly id="documentId" name="documentId" value="{{ documentId }}">
                 </div>
                 <div class="cell">
-                    <input type="file" data-role="file" id="filePDF" name="filePDF">
-                    <!--
-                    <input type="file" name="filePDF" id="file" class="inputfile"/>
-                    <div class="customInput" style="margin-left: 35%">
-                        <label for="file" style="display: block;text-align: center;">
-                            <i class="fas fa-file-pdf fa-4x"></i> <br>
-                            Subir PDF
-                        </label>
-                    </div>
-                    -->
+                    <input type="file" data-role="file" id="filePDF" name="filePDF"
+                           data-button-title="Subir archivo PDF">
                 </div>
                 <div class="cell">
-                    <input type="file" data-role="file" id="fileJPG" name="fileJPG">
-                    <!--
-                    <input type="file" name="fileJPG" id="file" class="inputfile"/>
-                    <div class="customInput" style="margin-left: 30%">
-                        <label for="file" style="display: block;text-align: center;">
-                            <i class="fas fa-file-image fa-4x"></i> <br>
-                            Subir JPG
-                        </label>
-                    </div>
-                    -->
+                    <input type="file" data-role="file" id="fileJPG" name="fileJPG"
+                           data-button-title="Subir JPG para analisis">
+                </div>
+                <div class="cell">
+                    <button id="ajaxButton" class="image-button button info" type="submit">
+                        <span style="font-size: 14px;">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                        <span class="caption" style="font-size: 14px;">Extraer datos de imagen</span>
+                    </button>
                 </div>
             </div>
+        </form>
 
-            <!--End drag & drop section-->
+        <form action="saveFile" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div id="hiddenInputArea">
+
+            </div>
+
+            <br><br>
+
+
+            <div class="row">
+                <div class="cell itemsCentered">
+                <h5>Campos del documento</h5>
+                    {% for f in fields %}
+                        <div class="row">
+                            <div class="cell">
+                                <input autocomplete="off" id="{{ f }}" data-role="input" data-prepend="{{ f }}"
+                                       type="text"
+                                       name="{{ f }}">
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="cell itemsCentered">
+                    <img src="{% static 'img/noPreview.jpg' %}" alt="" id="viewerImage">
+                </div>
+
+            </div>
+
 
             <div class="row">
                 <div class="cell"></div>
                 <div class="cell" style="text-align: center;">
-                    <button type="submit" class="button info">Enviar documento</button>
+                    <button type="submit" class="button success">Guardar documento</button>
                 </div>
+
                 <div class="cell"></div>
             </div>
 
-            {% for f in fields %}
-                <div class="row">
-                    <div class="cell">
-                        <input autocomplete="off" id="{{ f }}" data-role="input" data-prepend="{{ f }}" type="text" name="{{ f }}">
-                    </div>
-                </div>
-            {% endfor %}
-
         </form>
+
+
     </div>
 
     <script>
@@ -68,21 +127,100 @@
     </script>
 
     <script>
-        $("form#documentForm").submit(function (e) {
+        $("#fileJPG").change(function () {
+            $("#hiddenInputArea").empty();
+            var x = $("#fileJPG"),
+            y = x.clone();
+            y.attr("name","fileJPG");
+            y.prop("hidden",true);
+            $("#hiddenInputArea").append(y);
+        });
+
+        $("#filePDF").change(function () {
+            $("#hiddenInputArea").empty();
+            var x = $("#filePDF"),
+            y = x.clone();
+            y.attr("name","filePDF");
+            y.prop("hidden",true);
+            $("#hiddenInputArea").append(y);
+        });
+
+
+    </script>
+
+    <script>
+        $("form#createDocumentForm").submit(function (e) {
             e.preventDefault();
             var formData = new FormData(this);
-            $.ajax({
-                url: '/uploadDocument',
-                type: 'POST',
-                data: formData,
-                success: function (data) {
-                    updateFields(data['fieldsDict']);
-                },
-                cache: false,
-                contentType: false,
-                processData: false
-            });
+            if (document.getElementById("fileJPG").files.length === 0) {
+                Metro.dialog.open("#imageNotLoaded");
+            } else {
+                $.ajax({
+                    url: '/uploadDocument',
+                    type: 'POST',
+                    data: formData,
+                    success: function (data) {
+                        updateFields(data['fieldsDict']);
+                        Metro.dialog.open("#ocrSuccessful");
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+            }
         });
+    </script>
+
+    <script>
+        //Preview of the document
+        document.getElementById('fileJPG').onchange = function (evt) {
+            var tgt = evt.target || window.event.srcElement,
+                files = tgt.files;
+
+            // FileReader support
+            if (FileReader && files && files.length) {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    $("#viewerImage").fadeTo("fast", 0, function () {
+                        document.getElementById("viewerImage").src = fr.result;
+                        $("#viewerImage").fadeTo("fast", 1, function () {
+
+                        });
+                    });
+
+                };
+
+
+                fr.readAsDataURL(files[0]);
+
+
+            }
+
+            // Not supported
+            else {
+                // fallback -- perhaps submit the input to an iframe and temporarily store
+                // them on the server until the user's session ends.
+            }
+        }
+    </script>
+
+    <script>
+        const viewer = new Viewer(document.getElementById('viewerImage'), {
+            inline: false,
+            viewed() {
+            },
+            loading: true,
+
+        });
+    </script>
+
+    <script>
+        var usingOCR = {{ ocrEnable }};
+        if (!usingOCR) {
+            $("#fileJPG").prop("disabled", true);
+            $("#ajaxButton").prop("disabled", true);
+        }
+
     </script>
 
 

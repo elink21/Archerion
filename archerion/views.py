@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 
-#File related libs
+# File related libs
 from pymongo import MongoClient
 import gridfs
 import base64
@@ -9,54 +9,103 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.http import FileResponse
 
-#Formation and directory libs
+# Formation and directory libs
 import os
 import json
 
-#OCR and image processing libs
+# OCR and image processing libs
 import cv2
 import numpy
 from PIL import Image
 from pytesseract import *
 import pytesseract
 
+# Regex for queries
+import re
+
+
+def homePage(request):
+    return render(request, 'archerion/home.html', {})
 
 
 def getDataBaseConnection(database):
-    client=MongoClient()
-    db=client[database]
+    client = MongoClient()
+    db = client[database]
     return db
 
 
-def getImageById(imageId):
-    client = MongoClient()
-    db = client.odapas
-
-
 def selectFileTemplate(request):
-    db= getDataBaseConnection('odapas')
-    documentsNames = []
+    db = getDataBaseConnection('odapas')
+    templates = []
+    templatesNames = []
+    containerNames=[]
+
     for x in db.documentsTemplates.find():
-        documentsNames.append(x['name'])
-    return render(request, 'archerion/selectTemplate.html', {'names': documentsNames})
+        template = {}
+        template['name'] = x['name']
+        templatesNames.append(x['name'])
+
+        if(x['ocrEnable']=="on"):
+            byteLikeImage = searchByID(x['previewFileID'])
+            binaryString = base64.b64encode(byteLikeImage.getvalue()).decode()
+
+            stringHeader = "data:image/png;base64,"
+
+            template['imageString'] = stringHeader + binaryString
+        else: binaryString=""
+        templates.append(template)
+
+
+    for x in db.containers.find():
+        containerNames.append(x['name'])
+
+    return render(request, 'archerion/selectTemplate.html',
+                  {'containerNames':containerNames,'names': templatesNames, 'templates': json.dumps(templates)})
 
 
 def showDebugView(request):
     return render(request, 'archerion/debug.html', {})
 
 
-def newFile(request):
+def createContainerViaAjax(request):
     db= getDataBaseConnection('odapas')
+    container={
+        "name":request.POST['containerName'],
+        "type":request.POST['containerType'],
+        "number":request.POST['containerNumber'],
+        "outOfMany":request.POST['containerOutOfMany'],
+        "shelf":request.POST['containerShelf'],
+        "hall":request.POST['containerHall'],
+        "docket":request.POST['containerDocket']
+    }
+    db.containers.insert_one(container)
+    newContainersForSelect={}
+    containersInDB=[]
+
+    for x in db.containers.find():
+        containersInDB.append(x['name'])
+
+    newContainersForSelect[containersInDB[-1]]=containersInDB[-1]
+    for x in containersInDB[:len(containersInDB)-1]:
+        newContainersForSelect[x]=x
+
+
+    return HttpResponse(json.dumps(newContainersForSelect),content_type="application/json")
+
+def newFile(request):
+    db = getDataBaseConnection('odapas')
     documentName = request.POST['documentName']
+
     documentTemplate = db.documentsTemplates.find({'name': documentName}).next()
-    return render(request, 'archerion/newFile.html', {'documentId': documentTemplate['name'], 'template': documentTemplate,
-                                                'fields': documentTemplate['tags']})
+    return render(request, 'archerion/newFile.html',
+                  {'container':request.POST['container'],'documentId': documentTemplate['name'],
+                   'template': documentTemplate,
+                   'fields': documentTemplate['tags'],'ocrEnable':documentTemplate['ocrEnable']})
 
 
-#Todo: change all this function into a useful onee
-def viewFirstPdf(request):
-    db= getDataBaseConnection('gridf_example')
-    selectedChunks = db.fs.chunks.find({'files_id': ObjectId('5e6fdca7c1a5e69a764f1451')})
+def searchByID(objectID):
+    db = getDataBaseConnection('odapas')
+    selectedChunks = db.fs.chunks.find({'files_id': ObjectId(objectID)})
     binaryString = ''
     file = bytearray()
     for x in selectedChunks:
@@ -64,21 +113,33 @@ def viewFirstPdf(request):
         file += x['data']
 
     fileLike = BytesIO(file)
-    # return render(request,'archerion/debug.html',{'dataA':binaryString,'dataB':x})
-    return FileResponse(fileLike, content_type='application/pdf')
+    return fileLike
 
 
+def saveFile(request):
+    pdf = ""
+    address = os.getcwd() + "/temp.pdf"
 
-def handleFile(file):
-    db = MongoClient().gridf_example
+    os.remove(address) if os.path.isfile(address) else 0
+
+    if request.FILES['fileJPG']:
+        imageBytes = request.FILES['fileJPG'].read()
+        image = Image.open(BytesIO(imageBytes))
+        image.save(address)
+
+        fileID = saveFiletoDB(open(address, "rb").read())
+
+        fileLike = searchByID(fileID)
+        os.remove(address)
+        return FileResponse(fileLike, 'application/pdf')
+
+
+# This function can either receive JPG or PDF but in bytes form
+def saveFiletoDB(file):
+    db = MongoClient().odapas
     fs = gridfs.GridFS(db)
-
-    fileId = fs.put(file)
-
-    with open(path + '/temp.png', 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    return fileId
+    fileID = fs.put(file)
+    return fileID
 
 
 def sampleFileTest(request):
@@ -88,7 +149,7 @@ def sampleFileTest(request):
         fileId = handleFile(request.FILES['file'])
     else:
         file = "nonData"
-    db= getDataBaseConnection('gridf_example')
+    db = getDataBaseConnection('files')
 
     image = db.fs.chunks.find_one({'files_id': fileId})['data']
 
@@ -100,10 +161,17 @@ def sampleFileTest(request):
 
 
 def saveDocumentTemplate(request):
+    fileID = ""
+    if len(request.FILES) != 0:
+        imageBytes = request.FILES['file'].read()
+        fileID = saveFiletoDB(imageBytes)
+
     document = {
         'name': request.POST['name'],
-        'ocrEnable': request.POST['ocrEnable'],
+        'ocrEnable': request.POST.get('ocrEnable','false'),
+        'expireEnable': request.POST.get('expireDateEnable','false'),
         'tags': {},
+        'previewFileID': fileID,
     }
 
     tags = {}
@@ -125,7 +193,7 @@ def saveDocumentTemplate(request):
         }
 
     document['tags'] = tags
-    db= getDataBaseConnection('odapas')
+    db = getDataBaseConnection('odapas')
     db.documentsTemplates.insert_one(document)
     return redirect('/createDocumentTemplate')
 
@@ -137,7 +205,7 @@ def writeDebugMessage(s):
 
 def getKeysByOCR(image, documentName):
     img = cv2.imdecode(numpy.fromstring(image.read(), numpy.uint8), cv2.IMREAD_UNCHANGED)
-    db= getDataBaseConnection('odapas')
+    db = getDataBaseConnection('odapas')
     document = db.documentsTemplates.find_one({"name": documentName})
 
     fieldsDict = {}
@@ -149,7 +217,7 @@ def getKeysByOCR(image, documentName):
         x, y, w, h = int(float(x)), int(float(y)), int(float(w)), int(float(h))
 
         partialImg = img[y:y + h, x:x + w]
-        #cv2.imwrite(t + ".jpg", partialImg)
+        # cv2.imwrite(t + ".jpg", partialImg)
         imgForTesseract = Image.fromarray(partialImg)
         extractedField = pytesseract.image_to_string(imgForTesseract)
         fieldsDict[tag] = extractedField
@@ -157,16 +225,47 @@ def getKeysByOCR(image, documentName):
 
 
 def ajaxExtract(request):
-
     fieldsDict = getKeysByOCR(request.FILES['fileJPG'], request.POST['documentId'])
 
     # id=handleFile(request.FILES['fileJPG'])
-    return HttpResponse(json.dumps({'fieldsDict':fieldsDict}), content_type="application/json")
+    return HttpResponse(json.dumps({'fieldsDict': fieldsDict}), content_type="application/json")
 
+
+def searchView(request):
+    # This view have to receive all document types and tags in order to create
+    # filters and selective documents
+    db = getDataBaseConnection('odapas')
+    templates = {}
+    for template in db.documentsTemplates.find():
+        templateForSelect = {}
+
+        templateForSelect['name'] = template['name']
+
+        tagList = [tag for tag in template['tags']]
+
+        templateForSelect['tags'] = tagList
+
+        templates[template['name']] = templateForSelect
+
+    return render(request, 'archerion/search.html', {"templatesJSON": json.dumps(templates), 'templates': templates})
+
+
+def executeQuery(request):
+    db = getDataBaseConnection('odapas')
+    queryResults = {}
+    writeDebugMessage(request.POST['templateArray'])
+    groupForSearch = []
+    for templateName in request.POST['templateArray']:
+        for match in db.documentsTemplates.find():
+            groupForSearch.append(match)
+    writeDebugMessage(groupForSearch[0])
+
+    regx = re.compile(request.POST['key'], re.IGNORECASE)
+    return HttpResponse(json.dumps(queryResults), content_type="application/json")
 
 
 def createDocumentTemplate(request):
-    db= getDataBaseConnection('odapas')
+    db = getDataBaseConnection('odapas')
     templateNames = ''
     documentFields = ''
     for template in db.documentsTemplates.find():

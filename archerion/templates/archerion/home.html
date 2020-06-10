@@ -1,0 +1,36 @@
+{% extends 'archerion/template.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row" id="mainMenu">
+            <div class="cell homeOption">
+                <a class="aNoStyles" href="search">
+                    <i class="fas fa-search fa-4x"></i><br>
+                    Buscar documento
+                </a>
+            </div>
+
+            <div class="cell homeOption">
+                <a class="aNoStyles" href="selectTemplate">
+                    <i class="fas fa-folder-plus fa-4x"></i><br>
+                    Crear documento
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="cell homeOption">
+                <a class="aNoStyles" href="createDocumentTemplate">
+                    <i class="fa fa-file-invoice fa-4x"></i><br>
+                    Crear plantilla nueva
+                </a>
+            </div>
+            <div class="cell homeOption">
+                <a class="aNoStyles" href="search">
+                    <i class="fab fa-searchengin fa-4x"></i><br>
+                    Buscar por categorias
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

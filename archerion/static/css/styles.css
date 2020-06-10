@@ -31,7 +31,14 @@ body {
     position: absolute;
     color: white;
     top: 15px;
-    right: 10px;
+    right: 50px;
+}
+
+#homeButton {
+    position: absolute;
+    color: white;
+    top: 15px;
+    left: 50px;
 }
 
 .shadow {
@@ -246,26 +253,166 @@ body::-webkit-scrollbar-thumb {
     z-index: -1;
 }
 
-.inputfile + label , .customInput{
+.inputfile + label, .customInput {
     font-size: 1em;
     font-weight: 700;
     color: white;
     padding: 10px;
-    background-color: rgba(121,194,244,1);
+    background-color: rgba(121, 194, 244, 1);
     display: inline-block;
     transition: .3s ease;
     border-radius: 0.3em;
 }
 
 .inputfile:focus + label,
-.inputfile + label:hover , .customInput:hover{
+.inputfile + label:hover, .customInput:hover {
     background-color: rgba(121, 194, 244, 0.7);
     color: white;
 }
 
-.customInput:hover, .customInput label:hover{
+.customInput:hover, .customInput label:hover {
     cursor: pointer; /* "hand" cursor */
 }
 
 
 /*End drag & drop styles*/
+
+
+/*Loader styles*/
+
+.loaderWrapper {
+    position: fixed;
+}
+
+/*Main menu styles */
+
+#mainMenu {
+    margin-top: 4%;
+}
+
+.homeOption {
+    border-radius: 10px;
+!important;
+    padding: 5%;
+    text-align: center;
+
+    font-size: 20px;
+    color: white;
+    margin: 10px;
+    text-decoration: none;
+
+    background-color: white;
+    border: 1px solid rgba(121, 194, 244, 0.7);
+    transition: 0.5s ease-in-out;
+
+
+}
+
+.homeOption:hover {
+    background-color: rgba(121, 194, 244, 1);
+    border: 1px solid rgba(121, 194, 244, 0.7);
+    transition: 0.5s ease-in-out;
+}
+
+.homeOption:hover > a {
+    color: white;
+}
+
+
+.aNoStyles:hover {
+    color: white;
+    text-decoration: none;
+    display: block;
+}
+
+.aNoStyles {
+    display: block;
+    text-decoration: none;
+    color: rgba(121, 194, 244, 1);
+
+}
+
+/*Search area load*/
+.searchLoader {
+    border: 5px solid rgba(121, 194, 244, .2);;
+}
+
+.lds-facebook {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-facebook div {
+    display: inline-block;
+    position: absolute;
+    left: 8px;
+    width: 16px;
+    background: rgba(121, 194, 244, 1);
+    animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+
+.lds-facebook div:nth-child(1) {
+    left: 8px;
+    animation-delay: -0.24s;
+}
+
+.lds-facebook div:nth-child(2) {
+    left: 32px;
+    animation-delay: -0.12s;
+}
+
+.lds-facebook div:nth-child(3) {
+    left: 56px;
+    animation-delay: 0;
+}
+
+@keyframes lds-facebook {
+    0% {
+        top: 8px;
+        height: 64px;
+    }
+    50%, 100% {
+        top: 24px;
+        height: 32px;
+    }
+}
+
+/*Search effect*/
+.noDisplay {
+    display: none;
+}
+
+
+/*Custom input files*/
+
+#documentPreview {
+    max-width: 100px;
+}
+
+.selectTemplateSpan {
+    font-size: 18px;
+}
+
+#viewerImage {
+    border: 5px solid rgba(1,1,1,.2);
+    border-radius: 14px;
+    max-height: 200px;
+    height: 200px;
+
+    max-width: auto;
+    width: auto;
+
+    padding: 10px;
+    cursor: zoom-in ;
+}
+
+
+.itemsCentered {
+    text-align: center;
+}
+
+#documentForm{
+    display: none;
+}

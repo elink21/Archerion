@@ -9,12 +9,15 @@
     <link rel="stylesheet" href="{% static 'css/metroMin.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/cropper.css' %}">
+    <link rel="stylesheet" href="{% static 'css/viewer.css' %}">
     <link rel="icon" type="image/png" href="{% static 'img/favicon-32x32.png' %}" sizes="32x32"/>
 
     <link href="https://fonts.googleapis.com/css?family=Sen&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/loadingButton.css' %}">
     <script src="https://kit.fontawesome.com/d18f7d2173.js" crossorigin="anonymous"></script>
     <script src="{% static "js/jquery-3.4.1.min.js" %}"></script>
     <script src="{% static 'js/cropper.js' %}"></script>
+    <script src="{% static 'js/viewer.js' %}"></script>
     <title>Archivo ODAPAS</title>
 </head>
 
@@ -41,7 +44,9 @@
 </div>
 
 <script>
+
     $(window).on('load', function () {
+
         $(".loaderWrapper").fadeOut(1500);
     });
 </script>
@@ -60,9 +65,9 @@
 
     <!-- Overlay content -->
     <div class="overlay-contentNav">
-        <a class="option" href="#">
+        <a class="option" href="search">
 
-            <i class="fa fa-archive"></i>
+            <i class="fas fa-search"></i>
             <br>
             Buscar en archivo
         </a>
@@ -86,6 +91,10 @@
     <i class="fas fa-water fa-2x"></i>
 </a>
 
+<a href="/" id="homeButton">
+    <i class="fas fa-home fa-2x"></i>
+</a>
+
 <script>
     /* Open when someone clicks on the span element */
     function openNav() {
@@ -98,7 +107,7 @@
     }
 </script>
 
-<br><br>
+<br>
 {% block content %}
 
 {% endblock %}

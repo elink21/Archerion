@@ -1,46 +1,130 @@
 {% extends 'archerion/template.html' %}
-
+{% load staticfiles %}
 {% block content %}
     <br><br>
 
     <div class="container">
-        <form action="saveContainer" id="documentForm" method="post" enctype="multipart/form-data">
-            <div class="row">
-                <div class="cell">
-                    <h3>Datos del contenedor</h3>
-                </div>
+
+        <div class="row">
+            <div class="cell">
+                <h2 align="center">
+                    Seleccione el contenedor del documento
+                </h2>
             </div>
+        </div>
+
+        <form action="">
             <div class="row">
+                <div class="cell"></div>
                 <div class="cell">
-                    <input name="containerName" type="text" data-role="input" data-prepend="Nombre">
-                </div>
-                <div class="cell">
-                    <select name="containerType" data-role="select" id="" data-prepend="Soporte">
-                        <option value="Folder">Folder</option>
-                        <option value="Box">Caja</option>
-                        <option value="Book">Libro engargolado</option>
+                    <select data-role="select" name="containerSelect" id="containerSelect">
+                        {% for containerName in containerNames %}
+                            <option value="{{ containerName }}">{{ containerName }}</option>
+                        {% endfor %}
+
                     </select>
 
-
-
-
-
-
                 </div>
                 <div class="cell">
-                    <input type="text" data-role="input" data-prepend="Numero: ">
+                    <label for="">Crear un nuevo contenedor</label>
+                    <input onchange="expandContainerData()" type="checkbox" id="newContainer"
+                           data-role="switch"
+                           data-material="true" name="newContainer">
                 </div>
-                <div class="cell">
-                    <input type="text" data-role="input" data-prepend="De: ">
-                </div>
+
+                <div class="cell"></div>
             </div>
 
-            <div class="row">
-                <div class="cell"><input type="text" data-role="input" data-prepend="Estante"></div>
-                <div class="cell"><input type="text" data-role="input" data-prepend="Pasillo"></div>
-                <div class="cell"><input type="text" data-role="input" data-prepend="IDK"></div>
-            </div>
         </form>
+
+        <div class="accordion" id="accordionForm">
+            <form action="saveContainer" id="documentForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="cell">
+                        <h3>Datos del contenedor</h3>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="cell">
+                        <i class="fas fa-tag fa-2x"></i>
+                        <span class="selectTemplateSpan">Nombre</span>
+
+                    </div>
+                    <div class="cell">
+                        <i class="fas fa-archive fa-2x"></i>
+                        <span class="selectTemplateSpan">Soporte</span>
+
+                    </div>
+                    <div class="cell">
+                        <i class="fas fa-list-ol fa-2x"></i>
+                        <span class="selectTemplateSpan">Numero</span>
+                    </div>
+
+                    <div class="cell">
+                        <i class="fas fa-hashtag fa-2x"></i>
+
+                        <span class="selectTemplateSpan">De</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="cell">
+                        <input required name="containerName" type="text" data-role="input">
+                    </div>
+
+                    <div class="cell">
+                        <select required name="containerType" data-role="select" id="">
+                            <option value="Folder">Folder</option>
+                            <option value="Box">Caja</option>
+                            <option value="Book">Libro engargolado</option>
+                        </select>
+                    </div>
+
+
+                    <div class="cell">
+                        <input name="containerNumber" type="text" data-role="input">
+                    </div>
+                    <div class="cell">
+
+                        <input name="containerOutOfMany" type="text" data-role="input">
+                    </div>
+                </div>
+
+                <br>
+
+                <div class="row">
+                    <div class="cell">
+                        <i class="fas fa-boxes fa-2x"></i>
+                        <span class="selectTemplateSpan">Estante</span>
+                    </div>
+                    <div class="cell">
+                        <i class="fas fa-pallet fa-2x"></i>
+                        <span class="selectTemplateSpan">Pasillo</span>
+                    </div>
+                    <div class="cell">
+                        <i class="fas fa-folder-open fa-2x"></i>
+                        <span class="selectTemplateSpan">Legajo</span>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="cell"><input required name="containerShelf" type="text" data-role="input"></div>
+                    <div class="cell"><input required name="containerHall" type="text" data-role="input"></div>
+                    <div class="cell"><input name="containerDocket" type="text" data-role="input"></div>
+                </div>
+
+                <div class="row">
+                    <div class="cell itemsCentered"></div>
+                    <div class="cell itemsCentered">
+                        <button class="button success">Guardar contenedor</button>
+                    </div>
+                    <div class="cell itemsCentered"></div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="row">
@@ -52,17 +136,131 @@
     </div>
     <div class="row">
         <div class="cell"></div>
-        <div class="cell">
-            <form action="searchForTemplate" method="post">
+        <div class="cell itemsCentered">
+            <form action="searchForTemplate" id="selectTemplateForm" method="post">
                 {% csrf_token %}
-                <select name="documentName" id="" data-role="select">
-                    {% for x in names %}
-                        <option value="{{ x }}">{{ x }}</option>
-                    {% endfor %}
-                </select> <br>
-                <button class="button primary">Seleccionar</button>
+                <br><br>
+                <div class="row">
+                    <input type="text" id="copyOfSelectValue" name="container" hidden>
+
+                    <select onchange="changeSelectTemplate()" name="documentName" id="templateSelect"
+                            data-role="select">
+                        {% for x in names %}
+                            <option value="{{ x }}">{{ x }}</option>
+                        {% endfor %}
+                    </select> <br>
+                </div>
+
+                <br><br>
+
+                <div class="row">
+                    <div class="cell">
+                        <button type="submit" class="button primary">Seleccionar</button>
+                    </div>
+                </div>
+
             </form>
         </div>
+
+        <div class="cell itemsCentered">
+            <div class="viewerContainer">
+                <img id="viewerImage" src="{% static 'img/Invoice.jpg' %}">
+                <br>
+                <p>Clic para obtener vista previa</p>
+            </div>
+        </div>
+
         <div class="cell"></div>
     </div>
+
+
+
+    <script>
+        templates = JSON.parse('{{ templates|safe }}');
+
+        const viewer = new Viewer(document.getElementById('viewerImage'), {
+            inline: false,
+            viewed() {
+            },
+            loading: true,
+
+        });
+
+        window.onload = function () {
+            var checkboxes = document.getElementsByTagName('input');
+
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].type == 'checkbox') {
+                    checkboxes[i].checked = false;
+                }
+            }
+        };
+
+        function expandContainerData() {
+            var visible = document.getElementById("newContainer").checked;
+
+
+            if (visible) {
+                $("#documentForm").show(500);
+            } else {
+                $("#documentForm").hide(500);
+            }
+        }
+
+        function changeSelectTemplate() {
+            var selectedTemplate = $('#templateSelect').val();
+            var binaryString = "";
+            for (var i = 0; i < templates.length; i++) {
+                if (templates[i]['name'] === selectedTemplate) {
+                    binaryString = templates[i]['imageString'];
+                    break;
+                }
+            }
+
+            //No image to preview
+            if (binaryString == undefined) binaryString = "{%   static 'img/noPreview.jpg' %}";
+
+            $('#viewerImage').fadeTo("fast", 0, function () {
+                $('#viewerImage').attr("src", binaryString);
+                $('#viewerImage').fadeTo("fast", 1, function () {
+
+                });
+            });
+
+        }
+
+
+    </script>
+
+
+    <script>
+        $("form#documentForm").submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: '/createContainerViaAjax',
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    Metro.toast.create("Contenedor guardado con exito", null, 4000, "alert");
+                    //Setting new option to select by reset data
+                    var select = $('#containerSelect').data('select');
+                    select.data(data);
+                    //marking the new options as selected option
+                    //THIS IS ALREADY DONE IN SERVER (:
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+
+        });
+
+        //This function will copy the contents of select to the new form
+        $("#containerSelect").change(function () {
+
+            $("#copyOfSelectValue").val($("#containerSelect").val());
+        });
+    </script>
+
 {% endblock %}

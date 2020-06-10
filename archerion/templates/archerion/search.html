@@ -1,0 +1,130 @@
+{% extends "archerion/template.html" %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+    <div class="container">
+        <form action="" id="searchForm">
+        {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="cell" style="text-align: center;">
+                        <small data-hint-text="Se puede seleccionar mas de un grupo" data-role="hint">
+                            Seleccione el tipo de documento
+                        </small> <br>
+                        <select onchange="populateSubSelect()" name="templateNames" data-role="select" id="parentSelect" multiple>
+                            {% for template in templates %}
+                                <option value="{{ template }}">{{ template }}</option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div class="cell">
+                        <small data-hint-text="Seleccione el campo a buscar" data-role="hint">Buscar por campo</small>
+                        <select name="tag" id="subSelect" data-role="select">
+                        </select>
+                    </div>
+
+
+                    <div class="cell">
+                        <small data-hint-text="Palabra,numero etc." data-role="hint">Valor a buscar</small>
+                        <input name="key" type="text" class="" data-role="input">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="cell"></div>
+                    <div class="cell" style="text-align: center;">
+                        <button onclick="showLoader()" class="button info large rounded">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="cell"></div>
+                </div>
+            </div>
+        </form>
+
+
+        <div class="row">
+
+            <div class="cell searchLoader" style="text-align: center;padding: 10%;">
+                <div class="loaderPlaceholder">
+                    <h4></h4>
+                </div>
+                <div class="loadingDiv noDisplay">
+                    <div class="lds-facebook">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <h4>Buscando registros</h4>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        function showLoader() {
+            $(".loaderPlaceholder").addClass("noDisplay");
+            $(".loadingDiv").removeClass("noDisplay");
+        }
+
+        function populateSubSelect() {
+            var templatesNames = $("#parentSelect").val();
+            var templates = JSON.parse('{{ templatesJSON |safe}}');
+            var tags = [];
+            templatesNames.forEach(function (name) {
+                for (var template in templates) {
+                    if (name == templates[template]['name']) {
+                        templates[template]['tags'].forEach(function (tag) {
+                            tags.push(tag);
+                        });
+                    }
+                }
+            });
+
+            var subSelect = document.getElementById('subSelect');
+
+            while (subSelect.firstChild) {
+                subSelect.removeChild(subSelect.lastChild);
+            }
+
+            var jsonOptions = {};
+
+            tags.forEach(function (tag, index) {
+                jsonOptions[index] = tag;
+            });
+
+            var dynamicSelect = Metro.getPlugin('#subSelect', 'select');
+            dynamicSelect.data(JSON.parse(JSON.stringify(jsonOptions)));
+            console.log(jsonOptions);
+        }
+    </script>
+
+    <script>
+        $("form#searchForm").submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            formData.append("templateArray",$("#parentSelect").val());
+            $.ajax({
+                url: '/searchDocuments',
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    $(".loadingDiv").addClass("noDisplay");
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+    </script>
+
+
+
+
+{% endblock %}

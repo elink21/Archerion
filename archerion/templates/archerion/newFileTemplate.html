@@ -33,19 +33,24 @@
                 <h2 align="center">Crear nueva plantilla de archivo</h2>
             </div>
         </div>
+        <br><br><br>
 
         <form action="saveDocumentTemplate" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row">
                 <div class="cell">
-                    <input id="upload" name="file" type="file" data-role="file"
-                           data-button-title="Abrir archivo">
+
+
+                    <input id="upload" class="jpgCustomInput" name="file" type="file" data-role="file"
+                           data-button-title="Cargar imagen de plantilla" required>
                 </div>
                 <div class="cell">
                     <label for="">Usar reconocimiento de caracteres</label>
-                    <input name="ocrEnable" id="ocrSwitch" checked onchange="toggleOcr()" type="checkbox" data-role="switch"
+                    <input name="ocrEnable" id="ocrSwitch" checked onchange="toggleOcr()" type="checkbox"
+                           data-role="switch"
                            data-material="true">
                 </div>
+
 
             </div>
             <br><br>
@@ -60,6 +65,12 @@
                     <input type="text" data-role="input" name="classification" data-prepend="Tipo de documento"
                            data-autocomplete="Administrativo, Contable, Juridico" autocomplete="off" required
                            onkeydown="return event.key != 'Enter';">
+                </div>
+                <div class="cell">
+                    <label for="">Este documento expira</label>
+                    <input type="checkbox" id="expireDateSwitch"
+                           data-role="switch"
+                           data-material="true" name="expireDateEnable">
                 </div>
             </div>
             <div class="row">
@@ -153,6 +164,7 @@
         fieldCounter = 1;
         imageLoaded = false;
         useOcr = document.getElementById('ocrSwitch').checked;
+
 
         function toggleOcr() {
             useOcr = document.getElementById("ocrSwitch").checked;
